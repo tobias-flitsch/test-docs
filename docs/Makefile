@@ -11,7 +11,7 @@ BUILDDIR      = _build
 # Internal variables.
 ALLSPHINXOPTS = -d $(BUILDDIR)/doctrees $(SPHINXOPTS) .
 
-.PHONY: help clean html latex latexpdf
+.PHONY: help clean html
 
 # Put it first so that "make" without argument is like "make help".
 help:
