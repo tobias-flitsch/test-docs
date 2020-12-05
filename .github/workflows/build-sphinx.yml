@@ -21,12 +21,29 @@ jobs:
         run: |
           set -x
           apt-get update
-          apt-get install -y git
+          apt-get install -y git rsync python3-sphinx
           git clone "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
         shell: bash
-
-      - name: Run build script for Sphinx pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.CREATE_DEMO_SECRET }}
-        run: "docs/buildsite.sh"
+      
+      - name: Clean and build sphinx
+        run: |
+          make clean
+          make html
+        shell: bash
+      
+      - name: Update GitHub Pages
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          DOCROOT=`mktemp -d`
+          rsync -av "build/html/" "${DOCROOT}"
+          pushd "${DOCROOT}"
+          git init
+          git remote add deploy "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout -b gh-pages
+          touch .nojekyll
+          git add .
+          git commit -am "Updating docs for commit ${GITHUB_SHA}"
+          git push deploy gh-pages --force
+          popd
         shell: bash
